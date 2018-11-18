@@ -4,7 +4,7 @@ PG01="172.28.33.11"
 PG02="172.28.33.12"
 PG03="172.28.33.13"
 
-POSTGRESQL_VERSION=9.4
+POSTGRESQL_VERSION=9.6
 
 function setup_ssh_keys() {
     cp -rp /vagrant/.ssh/* /root/.ssh
@@ -129,7 +129,7 @@ archive_command = 'exit 0'
 archive_mode = 'on'
 autovacuum = 'on'
 checkpoint_completion_target = 0.6
-checkpoint_segments = 10
+#checkpoint_segments = 10
 checkpoint_warning = 300
 data_directory = '/var/lib/postgresql/${POSTGRESQL_VERSION}/main'
 datestyle = 'iso, mdy'
@@ -189,7 +189,7 @@ function setup_cluster() {
     cat > /etc/default/corosync <<EOF
 START=yes
 EOF
-
+    mkdir -p /etc/corosync/service.d
     # Make sure pacemaker is setup
     cat > /etc/corosync/service.d/pacemaker <<EOF
 service {
