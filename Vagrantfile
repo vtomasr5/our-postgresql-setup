@@ -23,9 +23,4 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     pg02_config.vm.network :private_network, ip: "172.28.33.12"
     pg02_config.vm.provision :shell, :path => "postgresql-cluster-setup.sh"
   end
-  config.vm.define :pg03 do |pg03_config|
-    pg03_config.vm.hostname = 'pg03'
-    pg03_config.vm.network :private_network, ip: "172.28.33.13"
-    pg03_config.vm.provision :shell, :path => "postgresql-cluster-setup.sh"
-  end
 end

@@ -2,7 +2,6 @@
 
 PG01="172.28.33.11"
 PG02="172.28.33.12"
-PG03="172.28.33.13"
 
 POSTGRESQL_VERSION=9.6
 
@@ -64,7 +63,6 @@ function setup_fresh_postgresql() {
     service postgresql stop
 
     rsync -avz -e 'ssh -oStrictHostKeyChecking=no' /var/lib/postgresql/${POSTGRESQL_VERSION}/main/ $PG02:/var/lib/postgresql/${POSTGRESQL_VERSION}/main
-    rsync -avz -e 'ssh -oStrictHostKeyChecking=no' /var/lib/postgresql/${POSTGRESQL_VERSION}/main/ $PG03:/var/lib/postgresql/${POSTGRESQL_VERSION}/main
 }
 
 function setup_postgresql_repo() {
@@ -109,7 +107,6 @@ function setup_postgresql() {
     host    replication     postgres        ::1/128                 md5
     hostssl    replication     postgres 172.28.33.11/32                 trust
     hostssl    replication     postgres 172.28.33.12/32                 trust
-    hostssl    replication     postgres 172.28.33.13/32                 trust
     # for user connections
     host       all     postgres 172.28.33.1/32                 trust
     hostssl    all     postgres 172.28.33.1/32                 trust
@@ -120,8 +117,6 @@ function setup_postgresql() {
     hostssl    all     postgres 172.28.33.11/32                 trust
     host       all     postgres 172.28.33.12/32                 trust
     hostssl    all     postgres 172.28.33.12/32                 trust
-    host       all     postgres 172.28.33.13/32                 trust
-    hostssl    all     postgres 172.28.33.13/32                 trust
 EOF
 
     cat > /etc/postgresql/${POSTGRESQL_VERSION}/main/postgresql.conf <<EOF
@@ -208,7 +203,7 @@ EOF
 # Currently they're set to the values we use during deliberate migrations
 function build_cluster() {
     printf "Waiting for cluster to have quorum"
-    while [ -z "$(crm status | grep '3 Nodes configured')" ]; do
+    while [ -z "$(crm status | grep '2 Nodes configured')" ]; do
         sleep 1
         printf "."
     done
@@ -223,7 +218,7 @@ property default-resource-stickiness=100
 primitive PgBouncerVIP ocf:heartbeat:IPaddr2 params ip=172.28.33.9 cidr_netmask=32 op monitor interval=5s meta resource-stickiness=200
 primitive PostgresqlVIP ocf:heartbeat:IPaddr2 params ip=172.28.33.10 cidr_netmask=32 op monitor interval=5s
 primitive Postgresql ocf:heartbeat:pgsql \
-    params pgctl="/usr/lib/postgresql/${POSTGRESQL_VERSION}/bin/pg_ctl" psql="/usr/bin/psql" pgdata="/var/lib/postgresql/${POSTGRESQL_VERSION}/main/" start_opt="-p 5432" rep_mode="sync" node_list="pg01 pg02 pg03" primary_conninfo_opt="keepalives_idle=60 keepalives_interval=5 keepalives_count=5" master_ip="172.28.33.10" repuser="postgres" tmpdir="/var/lib/postgresql/${POSTGRESQL_VERSION}/tmp" config="/etc/postgresql/${POSTGRESQL_VERSION}/main/postgresql.conf" logfile="/var/log/postgresql/postgresql-crm.log" restore_command="exit 0" \
+    params pgctl="/usr/lib/postgresql/${POSTGRESQL_VERSION}/bin/pg_ctl" psql="/usr/bin/psql" pgdata="/var/lib/postgresql/${POSTGRESQL_VERSION}/main/" start_opt="-p 5432" rep_mode="sync" node_list="pg01 pg02" primary_conninfo_opt="keepalives_idle=60 keepalives_interval=5 keepalives_count=5" master_ip="172.28.33.10" repuser="postgres" tmpdir="/var/lib/postgresql/${POSTGRESQL_VERSION}/tmp" config="/etc/postgresql/${POSTGRESQL_VERSION}/main/postgresql.conf" logfile="/var/log/postgresql/postgresql-crm.log" restore_command="exit 0" \
     op start timeout="60s" interval="0s" on-fail="restart" \
     op monitor timeout="60s" interval="2s" on-fail="restart" \
     op monitor timeout="60s" interval="1s" on-fail="restart" role="Master" \
@@ -231,7 +226,7 @@ primitive Postgresql ocf:heartbeat:pgsql \
     op demote timeout="60s" interval="0s" on-fail="stop" \
     op stop timeout="60s" interval="0s" on-fail="block" \
     op notify timeout="60s" interval="0s"
-ms msPostgresql Postgresql params master-max=1 master-node-max=1 clone-max=3 clone-node-max=1 notify=true
+ms msPostgresql Postgresql params master-max=1 master-node-max=1 clone-max=2 clone-node-max=1 notify=true
 colocation pgbouncer-vip-prefers-master 100: PgBouncerVIP msPostgresql:Master
 colocation vip-with-master inf: PostgresqlVIP msPostgresql:Master
 order start-vip-after-postgres inf: msPostgresql:promote PostgresqlVIP:start symmetrical=false

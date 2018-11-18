@@ -3,9 +3,9 @@ our-postgresql-setup
 
 # Overview
 
-This repo is an extracted version of how we run PostgreSQL clusters at GoCardless.
+This repo is an extracted version of how we run PostgreSQL clusters at Bluekiri.
 
-It helps you quickly spin up a 3-node cluster of PostgreSQL, managed by Pacemaker, and proxied by PgBouncer.
+It helps you quickly spin up a 2-node cluster of PostgreSQL, managed by Pacemaker, and proxied by PgBouncer.
 
 It's intended as a playground for us, and a learning resource that we wanted to share with the community.
 
@@ -13,7 +13,7 @@ You can hear more about how the cluster works in our talk - [Zero-downtime Postg
 
 # What's in the cluster?
 
-When you start the cluster, you get 3 nodes, each running:
+When you start the cluster, you get 2 nodes, each running:
 
   - PostgreSQL
   - Pacemaker
@@ -35,10 +35,9 @@ The cluster is configured with a single primary, one synchronous replica, and on
 1.  `./tmux-session.sh start`
 
 ## By hand
-1.  On 3 separate windows:
+1.  On 2 separate windows:
 2.  `vagrant up pg01 && vagrant ssh pg01`
 3.  `vagrant up pg02 && vagrant ssh pg02`
-4.  `vagrant up pg03 && vagrant ssh pg03`
 
 # Viewing cluster status
 
