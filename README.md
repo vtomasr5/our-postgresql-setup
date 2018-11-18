@@ -26,7 +26,7 @@ The cluster is configured with a single primary, one synchronous replica, and on
 # Dependencies
 1. [Virtualbox](https://www.virtualbox.org/wiki/Downloads)
 2. [Vagrant](http://www.vagrantup.com/downloads.html)
-3. ` git clone https://github.com/gocardless/our-postgresql-setup.git`
+3. ` git clone https://github.com/vtomasr5/our-postgresql-setup.git`
 4. [Recommended] [tmux](https://tmux.github.io)
 
 # Getting started
