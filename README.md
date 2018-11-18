@@ -19,7 +19,7 @@ When you start the cluster, you get 3 nodes, each running:
   - Pacemaker
   - PgBouncer
 
-All packages are from Ubuntu 14.04, except for PostgreSQL itself, which is at version 9.4.
+All packages are from Ubuntu 14.04, except for PostgreSQL itself, which is at version 9.6.
 
 The cluster is configured with a single primary, one synchronous replica, and one asynchronous replica.
 
@@ -60,6 +60,10 @@ Once the cluster is up, you have two options:
 3. Follow the prompts.
     1. It is safe to ignore the `Make sure you have the following command ready...` prompt. This is aimed at cases where you'd want to quickly re-enable traffic, and doesn't matter when running locally.
 4. Assuming everything went well, the primary will migrate to the synchronous replica, and the clients won't have received any connection resets.
+
+# TODO
+
+* Upgrade to Ubuntu 16.04 LTS Xenial
 
 # I have a question!
 
