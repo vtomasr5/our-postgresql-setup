@@ -3,7 +3,7 @@ our-postgresql-setup
 
 # Overview
 
-This repo is an extracted version of how we run PostgreSQL clusters at Bluekiri.
+This repo is an extracted version of how we run PostgreSQL clusters.
 
 It helps you quickly spin up a 2-node cluster of PostgreSQL, managed by Pacemaker, and proxied by PgBouncer.
 
@@ -21,12 +21,12 @@ When you start the cluster, you get 2 nodes, each running:
 
 All packages are from Ubuntu 14.04, except for PostgreSQL itself, which is at version 9.6.
 
-The cluster is configured with a single primary, one synchronous replica, and one asynchronous replica.
+The cluster is configured with a single primary and one asynchronous replica.
 
 # Dependencies
 1. [Virtualbox](https://www.virtualbox.org/wiki/Downloads)
 2. [Vagrant](http://www.vagrantup.com/downloads.html)
-3. ` git clone https://github.com/vtomasr5/our-postgresql-setup.git`
+3. `git clone https://github.com/vtomasr5/our-postgresql-setup.git`
 4. [Recommended] [tmux](https://tmux.github.io)
 
 # Getting started
@@ -41,7 +41,12 @@ The cluster is configured with a single primary, one synchronous replica, and on
 
 # Viewing cluster status
 
-You can run `crm_mon -Afr` on any node to see the current state of the cluster and all resources in it. Press `^c` to quit.
+You can run `sudo crm_mon -Afr` on any node to see the current state of the cluster and all resources in it. Press `^c` to quit.
+
+Commands for playing with the cluster:
+1. Force a failover in pg01 node: `sudo crm node standby pg01` (or pg02)
+2. Cleanup corosync messages: `sudo crm resource cleanup Postgresql`
+3. Return a node back online: `sudo crm node online pg01` (perhaps you may need to start the postgresql manually)
 
 # Connecting to PostgreSQL
 
