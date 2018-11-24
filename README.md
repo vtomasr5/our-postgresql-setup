@@ -5,7 +5,7 @@ our-postgresql-setup
 
 This repo is an extracted version of how we run PostgreSQL clusters.
 
-It helps you quickly spin up a 2-node cluster of PostgreSQL, managed by Pacemaker, and proxied by PgBouncer.
+It helps you quickly spin up a 2-node cluster of PostgreSQL, managed by Pacemaker and corosync, and proxied by PgBouncer.
 
 It's intended as a playground for us, and a learning resource that we wanted to share with the community.
 
@@ -16,10 +16,10 @@ You can hear more about how the cluster works in our talk - [Zero-downtime Postg
 When you start the cluster, you get 2 nodes, each running:
 
   - PostgreSQL
-  - Pacemaker
+  - Pacemaker and corosync
   - PgBouncer
 
-All packages are from Ubuntu 14.04, except for PostgreSQL itself, which is at version 9.6.
+All packages are from Ubuntu 16.04, except for PostgreSQL itself, which is at version 9.6.
 
 The cluster is configured with a single primary and one asynchronous replica.
 
@@ -27,17 +27,18 @@ The cluster is configured with a single primary and one asynchronous replica.
 1. [Virtualbox](https://www.virtualbox.org/wiki/Downloads)
 2. [Vagrant](http://www.vagrantup.com/downloads.html)
 3. `git clone https://github.com/vtomasr5/our-postgresql-setup.git`
-4. [Recommended] [tmux](https://tmux.github.io)
+4. [Recommended] [tmux](https://tmux.github.io) (Windows not supported)
 
 # Getting started
 
-## With tmux (recommended)
+## With tmux 
 1.  `./tmux-session.sh start`
 
 ## By hand
 1.  On 2 separate windows:
 2.  `vagrant up pg01 && vagrant ssh pg01`
-3.  `vagrant up pg02 && vagrant ssh pg02`
+3.  wait 10 seconds before start pg02
+4.  `vagrant up pg02 && vagrant ssh pg02`
 
 # Viewing cluster status
 
@@ -67,7 +68,7 @@ Once the cluster is up, you have two options:
 
 # TODO
 
-* Upgrade to Ubuntu 16.04 LTS Xenial
+* Test on a Windows host (tested on Linux and macOS hosts)
 
 # I have a question!
 

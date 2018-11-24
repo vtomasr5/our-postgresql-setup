@@ -4,6 +4,7 @@ PG01="172.28.33.11"
 PG02="172.28.33.12"
 
 POSTGRESQL_VERSION=9.6
+PGBOUNCER_VERSION=1.9.0-2.pgdg16.04+1
 
 function setup_ssh_keys() {
     cp -rp /vagrant/.ssh/* /root/.ssh
@@ -16,7 +17,8 @@ function setup_ssh_keys() {
 }
 
 function setup_pgbouncer() {
-    apt-get -y install pgbouncer=1.5.4-4
+    # Install the version that comes with the official apt postgresql repository
+    apt-get -y install pgbouncer=${PGBOUNCER_VERSION}
 
     cat > /etc/pgbouncer/pgbouncer.ini <<EOF
 [databases]
@@ -52,15 +54,15 @@ EOF
     cat > /etc/default/pgbouncer <<EOF
 START=1
 EOF
-    service pgbouncer start
+    systemctl start pgbouncer
 }
 
 function setup_fresh_postgresql() {
     su -s /bin/bash -c "/usr/lib/postgresql/${POSTGRESQL_VERSION}/bin/initdb -D /var/lib/postgresql/${POSTGRESQL_VERSION}/main -E utf-8" postgres
 
     # start postgresql to set things up before copying
-    service postgresql start
-    service postgresql stop
+    systemctl start postgresql
+    systemctl stop postgresql
 
     rsync -avz -e 'ssh -oStrictHostKeyChecking=no' /var/lib/postgresql/${POSTGRESQL_VERSION}/main/ $PG02:/var/lib/postgresql/${POSTGRESQL_VERSION}/main
 }
@@ -85,38 +87,38 @@ function setup_postgresql() {
     apt-get -y install postgresql-${POSTGRESQL_VERSION}
 
     # disable postgresql from auto starting
-    update-rc.d -f postgresql remove
+    #systemctl disable postgresql
 
-    service postgresql stop
+    systemctl stop postgresql
 
     cat > /etc/postgresql/${POSTGRESQL_VERSION}/main/pg_hba.conf <<EOF
-    local   all             postgres                                peer
+local   all             postgres                                peer
 
-    # TYPE  DATABASE        USER            ADDRESS                 METHOD
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
 
-    # "local" is for Unix domain socket connections only
-    local   all             all                                     peer
-    # IPv4 local connections:
-    host    all             all             127.0.0.1/32            md5
-    # IPv6 local connections:
-    host    all             all             ::1/128                 md5
-    # Allow replication connections from localhost, by a user with the
-    # replication privilege.
-    #local   replication     postgres                                peer
-    #host    replication     postgres        127.0.0.1/32            md5
-    host    replication     postgres        ::1/128                 md5
-    hostssl    replication     postgres 172.28.33.11/32                 trust
-    hostssl    replication     postgres 172.28.33.12/32                 trust
-    # for user connections
-    host       all     postgres 172.28.33.1/32                 trust
-    hostssl    all     postgres 172.28.33.1/32                 trust
-    # for pgbouncer
-    host       all     postgres 172.28.33.10/32                 trust
-    hostssl    all     postgres 172.28.33.10/32                 trust
-    host       all     postgres 172.28.33.11/32                 trust
-    hostssl    all     postgres 172.28.33.11/32                 trust
-    host       all     postgres 172.28.33.12/32                 trust
-    hostssl    all     postgres 172.28.33.12/32                 trust
+# "local" is for Unix domain socket connections only
+local   all             all                                     peer
+# IPv4 local connections:
+host    all             all             127.0.0.1/32            md5
+# IPv6 local connections:
+host    all             all             ::1/128                 md5
+# Allow replication connections from localhost, by a user with the
+# replication privilege.
+#local   replication     postgres                                peer
+#host    replication     postgres        127.0.0.1/32            md5
+host    replication     postgres        ::1/128                 md5
+hostssl    replication     postgres 172.28.33.11/32                 trust
+hostssl    replication     postgres 172.28.33.12/32                 trust
+# for user connections
+host       all     postgres 172.28.33.1/32                 trust
+hostssl    all     postgres 172.28.33.1/32                 trust
+# for pgbouncer
+host       all     postgres 172.28.33.10/32                 trust
+hostssl    all     postgres 172.28.33.10/32                 trust
+host       all     postgres 172.28.33.11/32                 trust
+hostssl    all     postgres 172.28.33.11/32                 trust
+host       all     postgres 172.28.33.12/32                 trust
+hostssl    all     postgres 172.28.33.12/32                 trust
 EOF
 
     cat > /etc/postgresql/${POSTGRESQL_VERSION}/main/postgresql.conf <<EOF
@@ -165,6 +167,8 @@ wal_level = 'hot_standby'
 work_mem = '128MB'
 EOF
 
+    #systemctl start postgresql
+
     # we will recreate this later in preparation for pacemaker
     rm -rf /var/lib/postgresql/${POSTGRESQL_VERSION}/main/
 }
@@ -184,9 +188,10 @@ function setup_cluster() {
     cat > /etc/default/corosync <<EOF
 START=yes
 EOF
-    mkdir -p /etc/corosync/service.d
-    # Make sure pacemaker is setup
-    cat > /etc/corosync/service.d/pacemaker <<EOF
+
+     mkdir -p /etc/corosync/service.d
+     # Make sure pacemaker is setup
+     cat > /etc/corosync/service.d/pacemaker <<EOF
 service {
     name: pacemaker
     ver: 1
@@ -194,16 +199,16 @@ service {
 EOF
 
     # start corosync / pacemaker
-    service corosync start
+    systemctl restart corosync
     # TODO: check output of corosync-cfgtool -s says "no faults"
-    service pacemaker start
+    systemctl restart pacemaker
 }
 
 # TODO: have a way to customise op monitor intervals during cluster turnup
 # Currently they're set to the values we use during deliberate migrations
 function build_cluster() {
     printf "Waiting for cluster to have quorum"
-    while [ -z "$(crm status | grep '2 Nodes configured')" ]; do
+    while [ -z "$(crm status | grep '2 nodes and 0 resources configured')" ]; do
         sleep 1
         printf "."
     done
@@ -219,13 +224,13 @@ primitive PgBouncerVIP ocf:heartbeat:IPaddr2 params ip=172.28.33.9 cidr_netmask=
 primitive PostgresqlVIP ocf:heartbeat:IPaddr2 params ip=172.28.33.10 cidr_netmask=32 op monitor interval=5s
 primitive Postgresql ocf:heartbeat:pgsql \
     params pgctl="/usr/lib/postgresql/${POSTGRESQL_VERSION}/bin/pg_ctl" psql="/usr/bin/psql" pgdata="/var/lib/postgresql/${POSTGRESQL_VERSION}/main/" start_opt="-p 5432" rep_mode="sync" node_list="pg01 pg02" primary_conninfo_opt="keepalives_idle=60 keepalives_interval=5 keepalives_count=5" master_ip="172.28.33.10" repuser="postgres" tmpdir="/var/lib/postgresql/${POSTGRESQL_VERSION}/tmp" config="/etc/postgresql/${POSTGRESQL_VERSION}/main/postgresql.conf" logfile="/var/log/postgresql/postgresql-crm.log" restore_command="exit 0" \
-    op start timeout="60s" interval="0s" on-fail="restart" \
-    op monitor timeout="60s" interval="2s" on-fail="restart" \
-    op monitor timeout="60s" interval="1s" on-fail="restart" role="Master" \
-    op promote timeout="60s" interval="0s" on-fail="restart" \
-    op demote timeout="60s" interval="0s" on-fail="stop" \
-    op stop timeout="60s" interval="0s" on-fail="block" \
-    op notify timeout="60s" interval="0s"
+    op start timeout="120s" interval="0s" on-fail="restart" \
+    op monitor timeout="120s" interval="2s" on-fail="restart" \
+    op monitor timeout="120s" interval="1s" on-fail="restart" role="Master" \
+    op promote timeout="120s" interval="0s" on-fail="restart" \
+    op demote timeout="120s" interval="0s" on-fail="stop" \
+    op stop timeout="120s" interval="0s" on-fail="block" \
+    op notify timeout="90s" interval="0s"
 ms msPostgresql Postgresql params master-max=1 master-node-max=1 clone-max=2 clone-node-max=1 notify=true
 colocation pgbouncer-vip-prefers-master 100: PgBouncerVIP msPostgresql:Master
 colocation vip-with-master inf: PostgresqlVIP msPostgresql:Master
