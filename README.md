@@ -68,7 +68,10 @@ Once the cluster is up, you have two options:
 
 # TODO
 
-* Test on a Windows host (tested on Linux and macOS hosts)
+- [x] Upgrade to Ubuntu 16.04 LTS
+- [ ] Test on a Windows host (tested on Linux and macOS hosts)
+- [ ] Add repmgr support
+- [ ] Improve documentation
 
 # I have a question!
 
