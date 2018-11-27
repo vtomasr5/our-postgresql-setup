@@ -54,7 +54,7 @@ EOF
     cat > /etc/default/pgbouncer <<EOF
 START=1
 EOF
-    systemctl start pgbouncer
+    systemctl restart pgbouncer
 }
 
 function setup_fresh_postgresql() {
