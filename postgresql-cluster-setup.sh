@@ -12,6 +12,7 @@ function setup_ssh_keys() {
     chmod 700 /root/.ssh
     chmod 600 /root/.ssh/id_rsa
     chmod 644 /root/.ssh/id_rsa.pub
+    chmod 644 /root/.ssh/authorized_keys
     chown -R root /root/.ssh
     chgrp -R root /root/.ssh
 }
