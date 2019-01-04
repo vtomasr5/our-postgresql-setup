@@ -78,8 +78,9 @@ function setup_postgresql_repo() {
 
     # Update package info
     apt-get update
+
     # Upgrade all the (safe) packages to start from a clean slate
-    apt-get -y upgrade
+    #apt-get -y upgrade
 }
 
 
