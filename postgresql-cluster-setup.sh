@@ -161,7 +161,7 @@ shared_preload_libraries = 'pg_stat_statements'
 ssl = on
 ssl_cert_file = '/etc/ssl/certs/ssl-cert-snakeoil.pem'
 ssl_key_file = '/etc/ssl/private/ssl-cert-snakeoil.key'
-unix_socket_directories = '/var/run/postgresql'
+# unix_socket_directories = '/var/run/postgresql'
 wal_buffers = '8MB'
 wal_keep_segments = '200'
 wal_level = 'hot_standby'
@@ -183,7 +183,7 @@ function setup_cluster() {
     cp /vagrant/corosync/authkey /etc/corosync/authkey
 
     # Install our patched version of the pgsql resource
-    cp /vagrant/resource_agents/pgsql /usr/lib/ocf/resource.d/heartbeat/pgsql
+#    cp /vagrant/resource_agents/pgsql /usr/lib/ocf/resource.d/heartbeat/pgsql
 
     # Make sure corosync can start
     cat > /etc/default/corosync <<EOF
