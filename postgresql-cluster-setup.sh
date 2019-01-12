@@ -78,18 +78,12 @@ function setup_postgresql_repo() {
 
     # Update package info
     apt-get update
-
-    # Upgrade all the (safe) packages to start from a clean slate
-    #apt-get -y upgrade
 }
 
 
 function setup_postgresql() {
     # Install postgresql
     apt-get -y install postgresql-${POSTGRESQL_VERSION}
-
-    # disable postgresql from auto starting
-    #systemctl disable postgresql
 
     systemctl stop postgresql
 
@@ -169,8 +163,6 @@ wal_level = 'hot_standby'
 work_mem = '128MB'
 EOF
 
-    #systemctl start postgresql
-
     # we will recreate this later in preparation for pacemaker
     rm -rf /var/lib/postgresql/${POSTGRESQL_VERSION}/main/
 }
@@ -182,9 +174,6 @@ function setup_cluster() {
     # Setup corosync config
     cp /vagrant/corosync/corosync.conf /etc/corosync/corosync.conf
     cp /vagrant/corosync/authkey /etc/corosync/authkey
-
-    # Install our patched version of the pgsql resource
-#    cp /vagrant/resource_agents/pgsql /usr/lib/ocf/resource.d/heartbeat/pgsql
 
     # Make sure corosync can start
     cat > /etc/default/corosync <<EOF

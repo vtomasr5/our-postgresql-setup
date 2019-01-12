@@ -9,7 +9,7 @@ It helps you quickly spin up a 2-node cluster of PostgreSQL, managed by Pacemake
 
 It's intended as a playground for us, and a learning resource that we wanted to share with the community.
 
-You can hear more about how the cluster works in our talk - [Zero-downtime Postgres upgrades](https://www.youtube.com/watch?v=SAkNBiZzEX8).
+You can hear more about how the cluster works in our talk (gocardless) - [Zero-downtime Postgres upgrades](https://www.youtube.com/watch?v=SAkNBiZzEX8).
 
 # What's in the cluster?
 
@@ -27,12 +27,8 @@ The cluster is configured with a single primary and one asynchronous replica.
 1. [Virtualbox](https://www.virtualbox.org/wiki/Downloads)
 2. [Vagrant](http://www.vagrantup.com/downloads.html)
 3. `git clone https://github.com/vtomasr5/our-postgresql-setup.git`
-4. [Recommended] [tmux](https://tmux.github.io) (Windows not supported)
 
 # Getting started
-
-## With tmux 
-1.  `./tmux-session.sh start`
 
 ## By hand
 1.  On 2 separate windows:
@@ -84,6 +80,5 @@ It's hard to know exactly what documentation/guidance is useful to people, so we
 
 # References
 * [PostgreSQL](https://www.postgresql.org)
-* [tmux](https://tmux.github.io)
 * [Vagrant](http://vagrantup.com)
 * [VirtualBox](http://www.virtualbox.org)
