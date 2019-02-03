@@ -25,6 +25,7 @@ function setup_pgbouncer() {
 [databases]
 postgres = host=172.28.33.10 pool_size=6
 template1 = host=172.28.33.10 pool_size=6
+bench = host=172.28.33.10
 
 [pgbouncer]
 logfile = /var/log/postgresql/pgbouncer.log
@@ -36,12 +37,13 @@ auth_type = trust
 auth_file = /etc/pgbouncer/userlist.txt
 admin_users = postgres
 stats_users =
-pool_mode = transaction
-server_reset_query =
+pool_mode = session
+server_reset_query = DISCARD ALL
 server_check_query = select 1
 server_check_delay = 10
 max_client_conn = 1000
-default_pool_size = 12
+default_pool_size = 20
+min_pool_size = 15
 reserve_pool_size = 5
 log_connections = 1
 log_disconnections = 1
