@@ -4,7 +4,7 @@ PG01="172.28.33.11"
 PG02="172.28.33.12"
 
 POSTGRESQL_VERSION=9.6
-PGBOUNCER_VERSION=1.9.0-2.pgdg16.04+1
+PGBOUNCER_VERSION=1.11.0-1.pgdg16.04+1
 
 function setup_ssh_keys() {
     cp -rp /vagrant/.ssh/* /root/.ssh
